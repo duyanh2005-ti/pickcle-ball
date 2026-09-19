@@ -6,6 +6,13 @@ public class BookingServiceDTO {
 	private Double unitPrice;
 	private Double total;
 	private Long serviceId;
+	private String ServiceName;
+	public String getServiceName() {
+		return ServiceName;
+	}
+	public void setServiceName(String serviceName) {
+		ServiceName = serviceName;
+	}
 	public Long getServiceId() {
 		return serviceId;
 	}

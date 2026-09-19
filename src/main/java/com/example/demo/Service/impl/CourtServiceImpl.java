@@ -5,6 +5,10 @@ import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.CourtsEntity;
@@ -12,6 +16,7 @@ import com.example.demo.Entity.PriceConfigEntity;
 import com.example.demo.Repository.CourtRepository;
 import com.example.demo.Service.CourtService;
 import com.example.demo.dto.CourtDTO;
+import com.example.demo.dto.CustomUserDetails;
 import com.example.demo.dto.PriceConfigDTO;
 
 @Service
@@ -26,7 +31,7 @@ public class CourtServiceImpl implements CourtService {
 		return courts;
 	}
 	public void updateCourt(Long Id,CourtDTO Court){
-		CourtsEntity court = courtRepository.findById(Id).get();
+		CourtsEntity court = courtRepository.findById(Id).orElseThrow(()->new RuntimeException("Không tìm thấy sân có ID:"+Id));
 		court.setName(Court.getName());
 		court.setAddressDetail(Court.getAddressDetail());
 		court.setType(Court.getType());
@@ -35,22 +40,14 @@ public class CourtServiceImpl implements CourtService {
 		court.setDistrict(Court.getDistrict());
 		court.setStatus(Court.getStatus());
 		court.setImage(Court.getImage());
+//		modelMapper.map(Court, court);
 		courtRepository.save(court);
-
 	}
 	public void deleteCourts(List<Long> ids) {
 		courtRepository.deleteAllById(ids);
 	}
-	public void addCourt(CourtDTO Court ) {
+	public void addCourt(CourtDTO Court,CustomUserDetails userDetails) {
 		CourtsEntity court = new CourtsEntity();
-//		Court.setAddressDetail(court.getAddressDetail());
-//		Court.setCity(court.getCity());
-//		Court.setDescription(court.getDescription());
-//		Court.setDistrict(court.getDistrict());
-//		Court.setImage(court.getImage());
-//		Court.setName(court.getName());
-//		Court.setStatus(court.getStatus());
-//		Court.setType(court.getType());
 		court.setAddressDetail(Court.getAddressDetail());
 		court.setDistrict(Court.getDistrict());
 		court.setCity(Court.getCity());
@@ -59,6 +56,7 @@ public class CourtServiceImpl implements CourtService {
 		court.setName(Court.getName());
 		court.setStatus(Court.getStatus());
 		court.setType(Court.getType());
+		court.setOwner(userDetails.getUser());
 		if (court.getPriceConfig() == null) {
 	        court.setPriceConfig(new ArrayList<>());
 	    }
@@ -74,5 +72,41 @@ public class CourtServiceImpl implements CourtService {
 			}
 		}
 		courtRepository.save(court);
+	}
+	@Override
+	public Page<CourtDTO> ownerGetAll(Long id ,int size,int page) {
+		Pageable pageable = PageRequest.of(page,size, Sort.by(Sort.Direction.DESC,"id"));
+		Page<CourtsEntity> CourtsPage = courtRepository.findByownerId(id, pageable);
+		Page<CourtDTO> dto =CourtsPage.map(item->{
+			CourtDTO i= new CourtDTO();
+			i.setName(item.getName());
+			i.setCity(item.getCity());
+			i.setDescription(item.getDescription());
+			i.setDistrict(item.getDistrict());
+			i.setStatus(item.getStatus());
+			i.setImage(item.getImage());
+			i.setType(item.getType());
+			i.setAddressDetail(item.getAddressDetail());
+			return i;
+		});
+		return dto;
+	}
+	@Override
+	public Page<CourtDTO> getAll(int page, int size){
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC,"id"));
+		Page<CourtsEntity> courtsPage =courtRepository.findAll(pageable);
+		Page<CourtDTO> dtoPage =courtsPage.map(item->{
+			CourtDTO i = new CourtDTO();
+			i.setName(item.getName());
+			i.setCity(item.getCity());
+			i.setDescription(item.getDescription());
+			i.setDistrict(item.getDistrict());
+			i.setImage(item.getImage());
+			i.setStatus(item.getStatus());
+			i.setType(item.getType());
+			i.setAddressDetail(item.getAddressDetail());
+			return i;
+		});
+		return dtoPage;
 	}
 }

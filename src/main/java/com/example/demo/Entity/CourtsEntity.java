@@ -12,6 +12,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -42,6 +44,21 @@ public class CourtsEntity {
 	private List<BookingEntity> booking=new ArrayList<>();
 	@OneToMany(mappedBy = "courts", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PriceConfigEntity> priceConfig = new ArrayList<>();
+	@ManyToOne
+	@JoinColumn(name="owner_id")
+	private UsersEntity owner;
+	public UsersEntity getOwner() {
+		return owner;
+	}
+	public void setOwner(UsersEntity owner) {
+		this.owner = owner;
+	}
+	public void setBooking(List<BookingEntity> booking) {
+		this.booking = booking;
+	}
+	public void setPriceConfig(List<PriceConfigEntity> priceConfig) {
+		this.priceConfig = priceConfig;
+	}
 	public Long getId() {
 		return id;
 	}

@@ -25,7 +25,7 @@ public class CourtRepositoryImpl implements CourtRepositoryCustom{
 		if(city!=""&&city!=null) {
 			sql.append(" and c.city = '"+city+"' ");
 		}
-		if(district!=null&&city!="") {
+		if(district!=null&&district!="") {
 			sql.append(" and c.district = '"+district+"' " );
 		}
 		Query query = entityManager.createNativeQuery(sql.toString(), CourtsEntity.class);

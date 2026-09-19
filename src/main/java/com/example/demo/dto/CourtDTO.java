@@ -2,13 +2,21 @@ package com.example.demo.dto;
 
 import java.util.List;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class CourtDTO {
 	private Long id;
+	@NotBlank(message="tên sân không được để trống")
 	private String name;
+	@NotBlank(message="loại sân không được để trống (Ví dụ: trong nhà/ ngoài trời")
 	private String type;
+	@NotBlank(message="Không bỏ trống mô tả sân")
 	private String description;
+	@NotBlank(message="không để trống thành phố")
 	private String city;
+	@NotBlank(message="không được để trống quận")
 	private String district;
+	@NotBlank(message="không được để trống địa chỉ thể")
 	private String addressDetail;
 	private String status;
 	private String image;

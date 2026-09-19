@@ -25,7 +25,7 @@ public class UsersEntity {
 	@Column(name="password")
 	private String passWord;
 	@Column(name="full_name")
-	private String full_name;
+	private String fullName;
 	@Column(name="email")
 	private String email;
 	@Column(name="phone")
@@ -35,6 +35,21 @@ public class UsersEntity {
 	@JsonIgnore
 	@OneToMany(mappedBy="user",fetch=FetchType.LAZY)
 	private List<BookingEntity> booking=new ArrayList<>();
+	@JsonIgnore
+	@OneToMany(mappedBy="owner",fetch=FetchType.LAZY)
+	private List<CourtsEntity> courts=new ArrayList<>();
+	public List<BookingEntity> getBooking() {
+		return booking;
+	}
+	public void setBooking(List<BookingEntity> booking) {
+		this.booking = booking;
+	}
+	public List<CourtsEntity> getCourts() {
+		return courts;
+	}
+	public void setCourts(List<CourtsEntity> courts) {
+		this.courts = courts;
+	}
 	public Long getId() {
 		return id;
 	}
@@ -53,11 +68,11 @@ public class UsersEntity {
 	public void setPassWord(String passWord) {
 		this.passWord = passWord;
 	}
-	public String getFull_name() {
-		return full_name;
+	public String getFullName() {
+		return fullName;
 	}
-	public void setFull_name(String full_name) {
-		this.full_name = full_name;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 	public String getEmail() {
 		return email;

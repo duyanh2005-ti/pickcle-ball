@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pickleball Hub - Hệ thống đặt sân trực tuyến</title>
+<!-- Bootstrap 5 CSS -->
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<!-- Google Fonts: Outfit -->
+<link
+	href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+	rel="stylesheet">
+<!-- FontAwesome v6 Icons -->
+<link
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+	rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<style>
+:root {
+	--primary-color: #10B981; /* Pickleball Dynamic Green */
+	--primary-hover: #059669;
+	--secondary-color: #0F172A; /* Sporty Navy/Slate */
+	--secondary-light: #1E293B;
+	--light-bg: #F8FAFC;
+	--border-color: #E2E8F0;
+	--booked-color: #EF4444;
+	--pending-color: #F59E0B;
+	--font-main: 'Outfit', sans-serif;
+}
+
+body {
+	font-family: var(--font-main);
+	background-color: var(--light-bg);
+	color: var(--secondary-color);
+}
+
+/* Utility Styles */
+.text-primary-custom {
+	color: var(--primary-color) !important;
+}
+
+.bg-primary-custom {
+	background-color: var(--primary-color) !important;
+}
+
+.bg-secondary-custom {
+	background-color: var(--secondary-color) !important;
+}
+
+.btn-primary-custom {
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+	background-color: var(--primary-hover);
+	color: white;
+	transform: translateY(-2px);
+}
+
+.btn-outline-primary-custom {
+	border: 2px solid var(--primary-color);
+	color: var(--primary-color);
+	background: transparent;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.btn-outline-primary-custom:hover {
+	background-color: var(--primary-color);
+	color: white;
+}
+
+/* Navbar & Header */
+.navbar-custom {
+	background-color: var(--secondary-color);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-custom .navbar-brand, .navbar-custom .nav-link {
+	color: white;
+	font-weight: 500;
+}
+
+.navbar-custom .nav-link:hover {
+	color: var(--primary-color);
+}
+
+.navbar-custom .navbar-brand span {
+	color: var(--primary-color);
+	font-weight: 800;
+}
+
+/* Hero Banner */
+.hero-section {
+	background: linear-gradient(135deg, var(--secondary-color) 0%,
+		var(--secondary-light) 100%);
+	color: white;
+	padding: 60px 0 60fpx 0;
+	position: relative;
+	overflow: hidden;
+}
+
+.hero-section::after {
+	content: '';
+	position: absolute;
+	bottom: -50px;
+	right: -50px;
+	width: 300px;
+	height: 300px;
+	background-color: var(--primary-color);
+	opacity: 0.1;
+	border-radius: 50%;
+	filter: blur(80px);
+}
+
+/* Filter Box */
+.filter-container {
+	margin-top: 20px;
+	background: white;
+	border-radius: 16px;
+	padding: 24px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+	border: 1px solid var(--border-color);
+}
+
+/* Cards & Badges */
+.court-card {
+	background: white;
+	border-radius: 16px;
+	border: 1px solid var(--border-color);
+	overflow: hidden;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.court-card:hover {
+	transform: translateY(-8px);
+	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.court-img-wrapper {
+	position: relative;
+	height: 200px;
+	overflow: hidden;
+}
+
+.court-img-wrapper img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.court-card:hover .court-img-wrapper img {
+	transform: scale(1.1);
+}
+
+.court-badge-type {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	background-color: var(--secondary-color);
+	color: white;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 6px 12px;
+	border-radius: 20px;
+}
+
+.amenity-badge {
+	background-color: #F1F5F9;
+	color: #475569;
+	font-size: 12px;
+	font-weight: 500;
+	padding: 4px 10px;
+	border-radius: 6px;
+	margin-right: 6px;
+	margin-bottom: 6px;
+	display: inline-block;
+}
+
+/* Detail & Matrix Selector */
+.date-picker-scroll {
+	display: flex;
+	overflow-x: auto;
+	gap: 12px;
+	padding: 10px 0;
+	scrollbar-width: thin;
+}
+
+.date-item {
+	flex: 0 0 90px;
+	text-align: center;
+	padding: 12px 6px;
+	border-radius: 12px;
+	background: white;
+	border: 1px solid var(--border-color);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.date-item.active {
+	background-color: var(--primary-color);
+	color: white;
+	border-color: var(--primary-color);
+}
+
+.date-item p {
+	margin: 0;
+}
+
+/* Interactive Booking Grid */
+.booking-grid-card {
+	background: white;
+	border-radius: 16px;
+	border: 1px solid var(--border-color);
+	padding: 20px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.booking-table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 8px;
+}
+
+.booking-table th {
+	text-align: center;
+	font-weight: 600;
+	padding: 10px;
+	background: #F1F5F9;
+	border-radius: 8px;
+}
+
+.time-header-cell {
+	background: #E2E8F0 !important;
+	font-weight: 700;
+}
+
+.slot-cell {
+	text-align: center;
+	padding: 14px 8px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-weight: 600;
+	font-size: 14px;
+	user-select: none;
+	border: 1px solid var(--border-color);
+}
+/* Cell Statuses */
+.slot-cell.available {
+	background-color: #FFFFFF;
+	color: var(--secondary-color);
+}
+
+.slot-cell.available:hover {
+	background-color: #E6F4EA;
+	border-color: var(--primary-color);
+	transform: scale(1.05);
+}
+
+.slot-cell.selected {
+	background-color: var(--primary-color) !important;
+	color: white !important;
+	border-color: var(--primary-color) !important;
+	box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.slot-cell.booked {
+	background-color: #FEE2E2;
+	color: var(--booked-color);
+	border-color: #FECACA;
+	cursor: not-allowed;
+	text-decoration: line-through;
+	font-weight: 400;
+}
+
+.slot-cell.pending {
+	background-color: #FEF3C7;
+	color: var(--pending-color);
+	border-color: #FDE68A;
+	cursor: not-allowed;
+}
+
+/* Floating Summary Panel */
+.summary-panel {
+	position: sticky;
+	top: 24px;
+	background: white;
+	border-radius: 16px;
+	border: 1px solid var(--border-color);
+	padding: 24px;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+/* Checkout View */
+.checkout-container {
+	background: white;
+	border-radius: 16px;
+	border: 1px solid var(--border-color);
+	padding: 32px;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.payment-method-box {
+	border: 2px solid var(--border-color);
+	border-radius: 12px;
+	padding: 16px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.payment-method-box.active {
+	border-color: var(--primary-color);
+	background-color: #F0FDF4;
+}
+
+.payment-method-box input[type="radio"] {
+	position: absolute;
+	right: 16px;
+	top: 20px;
+}
+
+/* Dashboard View */
+.dashboard-tab {
+	background: white;
+	border-radius: 12px;
+	padding: 6px;
+	display: inline-flex;
+	border: 1px solid var(--border-color);
+	margin-bottom: 24px;
+}
+
+.dashboard-tab .btn {
+	border-radius: 8px;
+	border: none;
+	padding: 10px 20px;
+	font-weight: 500;
+	transition: all 0.2s;
+}
+
+.dashboard-tab .btn.active {
+	background-color: var(--primary-color);
+	color: white;
+}
+
+.booking-history-card {
+	background: white;
+	border-radius: 16px;
+	border: 1px solid var(--border-color);
+	padding: 20px;
+	margin-bottom: 16px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive Settings */
+@media ( max-width : 768px) {
+	.booking-table {
+		display: block;
+		overflow-x: auto;
+		white-space: nowrap;
+	}
+}
+</style>
+</head>
+<body>
+
+	<!-- NAVBAR -->
+	<nav
+		class="navbar navbar-expand-lg navbar-custom navbar-dark sticky-top">
+		<div class="container">
+			<a class="navbar-brand" href="#" onclick="switchView('home')"> <i
+				class="fa-solid fa-table-tennis-paddle-ball me-2"></i><span>Pickleball</span>Hub
+			</a>
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="collapse" data-bs-target="#navbarNav">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav me-auto">
+					<li class="nav-item"><a class="nav-link" href="#"
+						onclick="switchView('home')">Trang chủ</a></li>
+					<li class="nav-item"><a class="nav-link" href="#"
+						onclick="switchView('home')">Danh sách sân</a></li>
+					<li class="nav-item"><a class="nav-link" href="#"
+						onclick="switchView('dashboard')">Lịch sử đặt đơn</a></li>
+				</ul>
+				<div class="d-flex align-items-center gap-3">
+					<div id="auth-buttons">
+						<button class="btn btn-outline-light btn-sm px-3 me-2"
+							onclick="showLoginModal()">Đăng nhập</button>
+						<button class="btn btn-primary-custom btn-sm px-3"
+							onclick="showRegisterModal()">Đăng ký</button>
+					</div>
+					<div id="user-profile"
+						class="d-none text-white d-flex align-items-center gap-2">
+						<i class="fa-solid fa-circle-user fa-lg text-primary-custom"></i>
+						<span id="user-display-name" class="fw-bold">Khách hàng</span>
+						<button class="btn btn-sm btn-outline-danger px-2 py-0 ms-2"
+							onclick="handleLogout()">Đăng xuất</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<!-- VIEW 1: HOME & COURT EXPLORER -->
+	<div id="view-home" class="app-view">
+		<header class="hero-section text-center">
+			<div class="container">
+				<h1 class="display-4 fw-extrabold mb-3">HỆ THỐNG ĐẶT SÂN
+					PICKLEBALL TRỰC TUYẾN</h1>
+				
+			</div>
+		</header>
+
+		<main class="container mb-5">
+			<!-- Filter Box -->
+			<div class="row justify-content-center">
+				<div class="col-lg-10">
+					<div class="filter-container">
+						<form id="search-filter-form" onsubmit="handleFilter(event)"
+							class="row g-3">
+							<div class="col-md-3">
+								<label class="form-label fw-bold"><i
+									class="fa-solid fa-magnifying-glass me-2 text-primary-custom"></i>Tên cụm sân</label>
+								<input type="text" class="form-control" id="filter-name" placeholder="Tìm kiếm tên sân...">
+							</div>
+							<div class="col-md-3">
+								<label class="form-label fw-bold"><i
+									class="fa-solid fa-city me-2 text-primary-custom"></i>Tỉnh / Thành phố</label>
+								<select class="form-select" id="filter-city">
+									<option value="">Tất cả Tỉnh/Thành</option>
+									<option value="Hà Nội">Hà Nội</option>
+									<option value="Đà Nẵng">Đà Nẵng</option>
+									<option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+								</select>
+							</div>
+							<div class="col-md-3">
+								<label class="form-label fw-bold"><i
+									class="fa-solid fa-location-dot me-2 text-primary-custom"></i>Quận / Huyện</label>
+								<select class="form-select" id="filter-district">
+									<option value="">Tất cả Quận/Huyện</option>
+									<option value="Cầu Giấy">Cầu Giấy</option>
+									<option value="Tây Hồ">Tây Hồ</option>
+									<option value="Đống Đa">Đống Đa</option>
+									<option value="Hải Châu">Hải Châu</option>
+									<option value="Sơn Trà">Sơn Trà</option>
+								</select>
+							</div>
+							<div class="col-md-3 d-flex align-items-end">
+								<button type="submit" class="btn btn-primary-custom w-100 py-2">
+									<i class="fa-solid fa-magnifying-glass me-2"></i>Tìm kiếm sân
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<!-- Court List Heading -->
+			<div
+				class="d-flex justify-content-between align-items-center mt-5 mb-4">
+				<h2 class="h3 fw-bold">Danh sách cụm sân chất lượng</h2>
+				<span class="text-muted fw-semibold" id="courts-count-text">Đang
+					tải sân...</span>
+			</div>
+
+			<!-- Courts Container Grid -->
+			<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
+				id="courts-container">
+				<!-- Court cards will be dynamically rendered here -->
+			</div>
+		</main>
+	</div>
+
+	<!-- VIEW 2: COURT DETAIL & SLOT MATRIX SELECTOR -->
+	<div id="view-detail" class="app-view d-none">
+		<main class="container my-5">
+			<!-- Back button -->
+			<button class="btn btn-outline-secondary btn-sm mb-4"
+				onclick="switchView('home')">
+				<i class="fa-solid fa-arrow-left me-2"></i>Quay lại danh sách
+			</button>
+
+			<!-- Detailed Court Info Banner -->
+			<div class="row g-4">
+				<div class="col-lg-8">
+					<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+						<img id="detail-court-img" src="" alt="Court Image" class="w-100"
+							style="height: 350px; object-fit: cover;">
+						<div class="card-body p-4">
+							<div
+								class="d-flex justify-content-between align-items-start mb-2">
+								<h1 class="h2 fw-bold mb-0" id="detail-court-name">Tên cụm
+									sân</h1>
+								<span
+									class="badge bg-secondary-custom px-3 py-2 fs-6 rounded-pill"
+									id="detail-court-type">Trong nhà</span>
+							</div>
+							<p class="text-muted mb-3">
+								<i class="fa-solid fa-location-dot me-2 text-primary-custom"></i><span
+									id="detail-court-address">Địa chỉ cụ thể</span>
+							</p>
+							<div class="mb-4" id="detail-court-amenities">
+								<!-- Amenities badges go here -->
+							</div>
+							<h5 class="fw-bold mb-2">Mô tả cụm sân</h5>
+							<p id="detail-court-desc" class="text-secondary">Mô tả cụ thể
+								của sân...</p>
+						</div>
+					</div>
+
+					<!-- INTERACTIVE BOOKING MATRIX -->
+					<div class="booking-grid-card">
+						<h4 class="fw-bold mb-3">
+							<i class="fa-solid fa-calendar-check me-2 text-primary-custom"></i>Chọn
+							lịch đặt sân
+						</h4>
+
+						<!-- Date Scroll Picker -->
+						<div class="date-picker-scroll mb-4" id="date-selector">
+							<!-- Dynamically render next 7 days -->
+						</div>
+
+						<!-- Slots Grid -->
+						<div class="table-responsive">
+							<table class="booking-table">
+								<thead>
+									<tr id="grid-header">
+										<th class="time-header-cell">Khung giờ</th>
+										<!-- Subcourt columns go here (e.g. Sân 1, Sân 2) -->
+									</tr>
+								</thead>
+								<tbody id="grid-body">
+									<!-- Dynamic rows of time-slots intersect subcourts -->
+								</tbody>
+							</table>
+						</div>
+
+						<!-- Legend -->
+						<div class="d-flex gap-4 mt-4 justify-content-center flex-wrap">
+							<div class="d-flex align-items-center gap-2">
+								<span class="d-inline-block border rounded bg-white"
+									style="width: 20px; height: 20px;"></span>Trống (Còn lịch)
+							</div>
+							<div class="d-flex align-items-center gap-2">
+								<span class="d-inline-block rounded bg-primary-custom"
+									style="width: 20px; height: 20px;"></span>Đang chọn
+							</div>
+							<div class="d-flex align-items-center gap-2">
+								<span class="d-inline-block rounded"
+									style="width: 20px; height: 20px; background-color: #FEE2E2; border: 1px solid #FECACA;"></span>Đã
+								được đặt
+							</div>
+							<div class="d-flex align-items-center gap-2">
+								<span class="d-inline-block rounded"
+									style="width: 20px; height: 20px; background-color: #FEF3C7; border: 1px solid #FDE68A;"></span>Đang
+								giữ chỗ
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Sticky Summary Sidebar -->
+				<div class="col-lg-4">
+					<div class="summary-panel">
+						<h4 class="fw-bold mb-4 border-bottom pb-3">
+							<i class="fa-solid fa-cart-shopping me-2 text-primary-custom"></i>Tóm
+							tắt đặt lịch
+						</h4>
+						<div id="selected-slots-list" class="mb-4">
+							<p class="text-muted text-center py-4">Chưa chọn khung giờ
+								nào. Vui lòng bấm chọn ô giờ trống trên bảng.</p>
+						</div>
+						<div
+							class="d-flex justify-content-between align-items-center fw-bold fs-5 mb-4 border-top pt-3">
+							<span>Tạm tính:</span> <span class="text-primary-custom"
+								id="summary-total-price">0đ</span>
+						</div>
+						<button class="btn btn-primary-custom w-100 py-3 rounded-3"
+							onclick="proceedToCheckout()">
+							<i class="fa-solid fa-circle-check me-2"></i>Tiếp tục thanh toán
+						</button>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<!-- VIEW 3: CHECKOUT & PAYMENT -->
+	<div id="view-checkout" class="app-view d-none">
+		<main class="container my-5">
+			<button class="btn btn-outline-secondary btn-sm mb-4"
+				onclick="switchView('detail')">
+				<i class="fa-solid fa-arrow-left me-2"></i>Quay lại chọn giờ
+			</button>
+
+			<div class="row g-4">
+				<div class="col-lg-7">
+					<div class="checkout-container mb-4">
+						<h4 class="fw-bold mb-4">
+							<i class="fa-solid fa-user-pen me-2 text-primary-custom"></i>Thông
+							tin liên hệ đặt sân
+						</h4>
+						<form id="checkout-form">
+							<div class="row g-3">
+								<div class="col-md-6">
+									<label class="form-label fw-semibold">Họ và tên</label> <input
+										type="text" class="form-control py-2" id="customer-name"
+										required placeholder="Nguyễn Văn A">
+								</div>
+								<div class="col-md-6">
+									<label class="form-label fw-semibold">Số điện thoại</label> <input
+										type="tel" class="form-control py-2" id="customer-phone"
+										required placeholder="09xxxxxxxx">
+								</div>
+								<div class="col-12">
+									<label class="form-label fw-semibold">Email nhận hóa
+										đơn</label> <input type="email" class="form-control py-2"
+										id="customer-email" required placeholder="example@gmail.com">
+								</div>
+								<div class="col-12">
+									<label class="form-label fw-semibold">Ghi chú thêm</label>
+									<textarea class="form-control" id="customer-notes" rows="3"
+										placeholder="Yêu cầu thêm (ví dụ: mượn bóng, thuê trọng tài...)"></textarea>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<div class="checkout-container">
+						<h4 class="fw-bold mb-4">
+							<i class="fa-solid fa-credit-card me-2 text-primary-custom"></i>Phương
+							thức thanh toán
+						</h4>
+						<div class="d-flex flex-column gap-3">
+							<div class="payment-method-box active"
+								onclick="selectPaymentMethod('qr')">
+								<input type="radio" name="paymentMethod" id="pay-qr" checked>
+								<label for="pay-qr"
+									class="fw-bold d-flex align-items-center gap-3 w-100 pointer">
+									<i class="fa-solid fa-qrcode fa-xl text-success"></i> Chuyển
+									khoản ngân hàng (Mã QR)
+								</label>
+								<p class="text-muted small mt-2 mb-0 ms-4">Quét mã QR tự
+									động hiển thị nội dung chuyển khoản để được xác nhận tức thì.</p>
+							</div>
+							<div class="payment-method-box"
+								onclick="selectPaymentMethod('cod')">
+								<input type="radio" name="paymentMethod" id="pay-cod"> <label
+									for="pay-cod"
+									class="fw-bold d-flex align-items-center gap-3 w-100 pointer">
+									<i class="fa-solid fa-hand-holding-dollar fa-xl text-primary"></i>
+									Thanh toán tại quầy
+								</label>
+								<p class="text-muted small mt-2 mb-0 ms-4">Thanh toán trực
+									tiếp bằng tiền mặt hoặc chuyển khoản tại quầy lễ tân khi đến
+									chơi.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Order Summary & Checkout Action -->
+				<div class="col-lg-5">
+					<div class="summary-panel">
+						<h4 class="fw-bold mb-4 border-bottom pb-3">
+							<i
+								class="fa-solid fa-file-invoice-dollar me-2 text-primary-custom"></i>Chi
+							tiết lịch đặt
+						</h4>
+						<div id="checkout-selected-slots" class="mb-4">
+							<!-- Dynamic summary list -->
+						</div>
+
+						<!-- QR Code dynamic simulation -->
+						<div id="qr-code-section"
+							class="text-center bg-light p-4 rounded-4 mb-4 border border-dashed">
+							<h6 class="fw-bold mb-2">QUÉT MÃ QR THANH TOÁN QUA APP NGÂN
+								HÀNG</h6>
+							<img
+								src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://images.unsplash.com"
+								alt="QR Code" class="img-thumbnail mb-2"
+								style="width: 180px; height: 180px;">
+							<p class="text-danger small fw-semibold mb-0">Nội dung CK:
+								PKB-BOOKING-SLOTS</p>
+						</div>
+
+						<div
+							class="d-flex justify-content-between align-items-center fw-bold fs-5 mb-4 border-top pt-3">
+							<span>Tổng cộng:</span> <span class="text-primary-custom"
+								id="checkout-total-price">0đ</span>
+						</div>
+
+						<button class="btn btn-primary-custom w-100 py-3 rounded-3"
+							onclick="submitBooking()">
+							<i class="fa-solid fa-shield-halved me-2"></i>Xác nhận đặt sân
+						</button>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<!-- VIEW 4: USER DASHBOARD / MY BOOKINGS -->
+	<div id="view-dashboard" class="app-view d-none">
+		<main class="container my-5">
+			<h2 class="fw-bold mb-4">
+				<i class="fa-solid fa-table-list me-2 text-primary-custom"></i>Quản
+				lý đơn hàng đặt lịch
+			</h2>
+
+			<!-- Tabs for Status filtering -->
+			<div class="dashboard-tab">
+				<button class="btn active" onclick="filterDashboard('ALL', this)">Tất
+					cả</button>
+				<button class="btn" onclick="filterDashboard('PENDING', this)">Chờ
+					duyệt/Thanh toán</button>
+				<button class="btn" onclick="filterDashboard('CONFIRMED', this)">Đã
+					xác nhận</button>
+				<button class="btn" onclick="filterDashboard('CANCELLED', this)">Đã
+					hủy</button>
+			</div>
+
+			<!-- Booking Cards List Container -->
+			<div id="bookings-history-list">
+				<!-- Dynamically populated -->
+			</div>
+		</main>
+	</div>
+
+	<!-- LOGIN MODAL -->
+	<div class="modal fade" id="loginModal" tabindex="-1"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content rounded-4 border-0">
+				<div class="modal-header border-0 pb-0">
+					<h5 class="modal-title fw-bold fs-4">
+						<i class="fa-solid fa-right-to-bracket text-primary-custom me-2"></i>Đăng
+						nhập tài khoản
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body p-4">
+					<form id="login-form" onsubmit="handleLoginSubmit(event)">
+						<div class="mb-3">
+							<label class="form-label fw-semibold">Tên đăng nhập</label> <input
+								type="text" class="form-control py-2" id="login-username"
+								required placeholder="owner_thanhphat">
+						</div>
+						<div class="mb-4">
+							<label class="form-label fw-semibold">Mật khẩu</label> <input
+								type="password" class="form-control py-2" id="login-password"
+								required placeholder="••••••••">
+						</div>
+						<button type="submit"
+							class="btn btn-primary-custom w-100 py-2 rounded-3">Đăng
+							nhập ngay</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- REGISTER MODAL -->
+	<div class="modal fade" id="registerModal" tabindex="-1"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content rounded-4 border-0">
+				<div class="modal-header border-0 pb-0">
+					<h5 class="modal-title fw-bold fs-4">
+						<i class="fa-solid fa-user-plus text-primary-custom me-2"></i>Đăng
+						ký khách hàng mới
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<div class="modal-body p-4">
+					<form id="register-form" onsubmit="handleRegisterSubmit(event)">
+						<div class="mb-3">
+							<label class="form-label fw-semibold">Tên đăng nhập</label> <input
+								type="text" class="form-control py-2" id="reg-username" required
+								placeholder="User đăng nhập">
+						</div>
+						<div class="mb-3">
+							<label class="form-label fw-semibold">Mật khẩu</label> <input
+								type="password" class="form-control py-2" id="reg-password"
+								required placeholder="••••••••">
+						</div>
+						<div class="mb-3">
+							<label class="form-label fw-semibold">Họ và tên</label> <input
+								type="text" class="form-control py-2" id="reg-fullname" required
+								placeholder="Nguyễn Văn A">
+						</div>
+						<div class="mb-3">
+							<label class="form-label fw-semibold">Email</label> <input
+								type="email" class="form-control py-2" id="reg-email" required
+								placeholder="example@gmail.com">
+						</div>
+						<div class="mb-4">
+							<label class="form-label fw-semibold">Số điện thoại</label> <input
+								type="tel" class="form-control py-2" id="reg-phone" required
+								placeholder="09xxxxxxxx">
+						</div>
+						<button type="submit"
+							class="btn btn-primary-custom w-100 py-2 rounded-3">Tạo
+							tài khoản</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Bootstrap 5 Bundle JS -->
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- WEB APPLICATION LOGIC & STATE (VANILLA JAVASCRIPT) -->
+	<script>
+        // Global App State
+        const APP_STATE = {
+            currentView: 'home',
+            courts: [],
+            selectedCourt: null,
+            selectedDate: new Date().toISOString().split('T')[0],
+            selectedSlots: [], // list of elements: { courtSubId: 1, courtSubName: 'Sân 1', timeSlot: '08:00 - 09:00', price: 80000, key: '1-08:00-09:00' }
+            bookings: [],
+            currentUser: null,
+            token: null
+        };
+
+        // Initialize App on Page Load
+        document.addEventListener("DOMContentLoaded", () => {
+            initDateFilter();
+            checkStoredAuth();
+            fetchCourts();
+            fetchBookings();
+        });
+
+        // Setup Date inputs
+        function initDateFilter() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filter-date').value = today;
+            document.getElementById('filter-date').min = today;
+        }
+
+        // Check local storage for authenticated session
+        function checkStoredAuth() {
+            const storedToken = localStorage.getItem('token');
+            const storedRole = localStorage.getItem('role');
+            const storedUserId = localStorage.getItem('userId');
+            const username = localStorage.getItem('username');
+
+            if (storedToken && storedUserId) {
+                APP_STATE.token = storedToken;
+                APP_STATE.currentUser = {
+                    id: parseInt(storedUserId),
+                    role: storedRole,
+                    username: username
+                };
+                updateUIForLoggedInUser();
+            }
+        }
+
+        // Dynamic Navigation Views Router
+        function switchView(viewName) {
+            APP_STATE.currentView = viewName;
+            
+            // Hide all views
+            document.querySelectorAll('.app-view').forEach(view => {
+                view.classList.add('d-none');
+            });
+            
+            // Show target view
+            document.getElementById(`view-${viewName}`).classList.remove('d-none');
+            window.scrollTo(0, 0);
+
+            // Fetch history if switching to dashboard
+            if (viewName === 'dashboard') {
+                fetchBookings();
+            }
+        }
+
+        // =========================================================================
+        // MOCK API SERVICES (Sẵn sàng thay thế bằng axios.get / axios.post tới Spring Boot)
+        // =========================================================================
+        
+        // 1. Lấy danh sách sân
+function fetchCourts() {
+    axios.get('http://localhost:8081/demo/court')
+        .then(response => {
+            // THÊM DÒNG NÀY ĐỂ KIỂM TRA DỮ LIỆU:
+            console.log("Dữ liệu nhận từ API:", response.data);
+            APP_STATE.courts = response.data;
+            renderCourts(APP_STATE.courts);
+        })
+        .catch(error => {
+            console.error("Lỗi khi tải danh sách sân:", error);
+            document.getElementById('courts-count-text').innerText = "Lỗi kết nối máy chủ!";
+        });
+}
+
+        // 2. Lọc sân bóng từ API thật ở Backend
+        function handleFilter(event) {
+            event.preventDefault();
+            const name = document.getElementById('filter-name').value;
+            const city = document.getElementById('filter-city').value;
+            const district = document.getElementById('filter-district').value;
+
+            // Gọi API lọc ở Backend (sử dụng cổng 8081 và context path /demo)
+            axios.get('http://localhost:8081/demo/api/court', {
+                params: {
+                    name: name,
+                    city: city,
+                    district: district
+                }
+            })
+            .then(response => {
+                console.log("Kết quả tìm kiếm:", response.data);
+                renderCourts(response.data);
+            })
+            .catch(error => {
+                console.error("Lỗi khi tìm kiếm sân:", error);
+                alert("Không thể kết nối máy chủ để tìm kiếm sân!");
+            });
+        }
+
+     // Render (vẽ) Cards Sân Bóng lên trang chủ
+        function renderCourts(courts) {
+            const container = document.getElementById('courts-container');
+            const textCount = document.getElementById('courts-count-text');
+            
+            container.innerHTML = '';
+            textCount.innerText = `Tìm thấy ${courts.length} cụm sân trống`;
+            if (courts.length === 0) {
+                container.innerHTML = `<div class="col-12"><p class="text-muted text-center py-5">Hiện tại chưa có cụm sân nào hoạt động.</p></div>`;
+                return;
+            }
+            courts.forEach(court => {
+                const card = document.createElement('div');
+                card.className = 'col';
+                
+                // 1. Tiện ích mặc định (vì DB chưa lưu tiện ích, ta gán mẫu để UI đẹp)
+                const mockAmenities = ["Bãi xe", "Wifi", "Thuê vợt", "Căn tin", "Đèn đêm"];
+                const amenitiesHtml = mockAmenities.map(a => `<span class="amenity-badge">${a}</span>`).join('');
+                
+                // 2. Lấy giá sân cơ bản từ PriceConfig của sân (nếu chưa có thì lấy mặc định 80.000đ)
+                
+                
+                // 3. Xử lý ảnh sân (nếu database trống cột image, ta dùng ảnh mặc định)
+                const courtImage = court.image ? court.image : "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=600&auto=format&fit=crop";
+                card.innerHTML = `
+                    <div class="court-card h-100">
+                        <div class="court-img-wrapper">
+                            <img src="${courtImage}" alt="${court.name}">
+                            <span class="court-badge-type">${court.type || "Trong nhà"}</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-bold mb-2 text-truncate" title="${court.name}">${court.name}</h5>
+                            <p class="card-text text-muted small mb-3">
+                                <i class="fa-solid fa-location-dot me-2 text-primary-custom"></i>
+                                ${court.addressDetail || "Chưa có địa chỉ"}, ${court.district || ""}, ${court.city || ""}
+                            </p>
+                            <div class="mb-3">${amenitiesHtml}</div>
+                            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                <div>
+                                    <span class="text-muted small"></span>
+                                    <span class="fw-bold fs-5 text-primary-custom"></span><span class="text-muted small"></span>
+                                </div>
+                                <button class="btn btn-primary-custom btn-sm px-3" onclick="showCourtDetail(${court.id})">Đặt sân ngay</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // =========================================================================
+        // TRANG CHI TIẾT SÂN & MA TRẬN CHỌN SLOT ĐẶT LỊCH (GRID BOOKING)
+        // =========================================================================
+        
+        function showCourtDetail(courtId) {
+            const court = APP_STATE.courts.find(c => c.id === courtId);
+            if (!court) return;
+
+            APP_STATE.selectedCourt = court;
+            APP_STATE.selectedSlots = []; // Reset selected slots
+
+            // Map data to View Details HTML
+            document.getElementById('detail-court-name').innerText = court.name;
+            document.getElementById('detail-court-type').innerText = court.type;
+            document.getElementById('detail-court-address').innerText = `${court.addressDetail}, ${court.district}, ${court.city}`;
+            document.getElementById('detail-court-desc').innerText = court.description;
+            document.getElementById('detail-court-img').src = court.image;
+
+            const amenitiesContainer = document.getElementById('detail-court-amenities');
+            amenitiesContainer.innerHTML = court.amenities.map(a => `<span class="badge bg-light text-dark border p-2 me-2 mb-2 fs-6"><i class="fa-solid fa-circle-check text-primary-custom me-2"></i>${a}</span>`).join('');
+
+            // Render Date Picker Horizontal Scroll (Next 7 days)
+            renderDateSelector();
+            
+            // Render the Booking Matrix Grid
+            renderBookingGrid();
+            
+            // Render Sticky bottom panel summary
+            updateSummaryPanel();
+
+            switchView('detail');
+        }
+
+        function renderDateSelector() {
+            const dateSelector = document.getElementById('date-selector');
+            dateSelector.innerHTML = '';
+
+            const dayNames = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+            
+            for (let i = 0; i < 7; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                
+                const isToday = i === 0;
+                const activeClass = dateStr === APP_STATE.selectedDate ? 'active' : '';
+
+                const item = document.createElement('div');
+                item.className = `date-item ${activeClass}`;
+                item.onclick = () => {
+                    APP_STATE.selectedDate = dateStr;
+                    document.querySelectorAll('.date-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    renderBookingGrid(); // Re-render grid for new date
+                };
+
+                item.innerHTML = `
+                    <p class="small text-uppercase fw-bold">${isToday ? 'Hôm nay' : dayNames[d.getDay()]}</p>
+                    <p class="fs-5 fw-bold mb-0">${d.getDate()}/${d.getMonth() + 1}</p>
+                `;
+                dateSelector.appendChild(item);
+            }
+        }
+
+        // Render Bảng Ma Trận Đặt Sân (Sân giao các Khung giờ - Dạng ngang giống ảnh mẫu)
+        function renderBookingGrid() {
+            const headerRow = document.getElementById('grid-header');
+            const bodyContainer = document.getElementById('grid-body');
+
+            // Định nghĩa các Khung giờ 1 tiếng (1 ca) từ 05:00 đến 22:00
+            const timeSlots = [
+                "05:00 - 06:00", "06:00 - 07:00", "07:00 - 08:00", "08:00 - 09:00", 
+                "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "12:00 - 13:00", 
+                "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00", 
+                "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00", "20:00 - 21:00", 
+                "21:00 - 22:00"
+            ];
+
+            // Render Header cột: Cột đầu tiên là "Sân / Giờ", các cột sau là mốc thời gian bắt đầu
+            headerRow.innerHTML = '<th class="time-header-cell bg-secondary-custom text-white" style="font-size: 13px;">Sân \\ Giờ</th>';
+            timeSlots.forEach(time => {
+                const startTime = time.split(' - ')[0];
+                const th = document.createElement('th');
+                th.className = 'text-center py-2 px-1 text-secondary border';
+                th.style.fontSize = '12px';
+                th.style.minWidth = '60px';
+                th.innerText = startTime;
+                headerRow.appendChild(th);
+            });
+
+            bodyContainer.innerHTML = '';
+
+            // Định nghĩa danh sách các Sân con (4 sân tương tự hình ảnh của bạn)
+            const subCourts = [
+                { id: 1, name: "Sân số 1" },
+                { id: 2, name: "Sân số 2" },
+                { id: 3, name: "Sân số 3" },
+                { id: 4, name: "Sân số 4" }
+            ];
+
+            // Giả lập các ô đã được đặt (Booked - hiển thị màu đỏ giống ảnh mẫu)
+            const mockBookedSlots = [
+                "1-05:00 - 06:00", "1-06:00 - 07:00", 
+                "4-05:00 - 06:00", "4-06:00 - 07:00", 
+                "1-18:00 - 19:00", "1-19:00 - 20:00", "1-20:00 - 21:00", "1-21:00 - 22:00",
+                "2-18:00 - 19:00", "2-19:00 - 20:00", "2-20:00 - 21:00",
+                "3-18:00 - 19:00", "3-19:00 - 20:00", "3-20:00 - 21:00",
+                "4-18:00 - 19:00", "4-19:00 - 20:00", "4-20:00 - 21:00"
+            ];
+            
+            // Giả lập các ô đang giữ chỗ / khoá (Pending - hiển thị màu xám giống ảnh mẫu)
+            const mockPendingSlots = [
+                "2-07:00 - 08:00", "2-08:00 - 09:00", "2-09:00 - 10:00", "2-10:00 - 11:00", "2-11:00 - 12:00",
+                "2-12:00 - 13:00", "2-13:00 - 14:00", "2-14:00 - 15:00", "2-15:00 - 16:00", "2-16:00 - 17:00", "2-17:00 - 18:00",
+                "3-07:00 - 08:00", "3-08:00 - 09:00", "3-09:00 - 10:00", "3-10:00 - 11:00", "3-11:00 - 12:00",
+                "3-12:00 - 13:00", "3-13:00 - 14:00", "3-14:00 - 15:00", "3-15:00 - 16:00", "3-16:00 - 17:00", "3-17:00 - 18:00"
+            ];
+
+            subCourts.forEach(sc => {
+                const tr = document.createElement('tr');
+
+                // Cột đầu tiên hiển thị Tên Sân con
+                const tdCourtName = document.createElement('td');
+                tdCourtName.className = 'fw-bold bg-secondary-custom text-white text-center py-3 border';
+                tdCourtName.style.minWidth = '110px';
+                tdCourtName.style.fontSize = '14px';
+                tdCourtName.innerText = sc.name;
+                tr.appendChild(tdCourtName);
+
+                // Các cột tiếp theo hiển thị ô Slot giờ tương ứng
+                timeSlots.forEach(time => {
+                    const tdSlot = document.createElement('td');
+                    const slotKey = `${sc.id}-${time}`;
+
+                    let status = "available";
+                    if (mockBookedSlots.includes(slotKey)) status = "booked";
+                    else if (mockPendingSlots.includes(slotKey)) status = "pending";
+
+                    const isSelected = APP_STATE.selectedSlots.some(s => s.key === slotKey);
+                    if (isSelected) status = "selected";
+
+                    tdSlot.className = `slot-cell ${status}`;
+                    tdSlot.style.minWidth = '65px';
+                    tdSlot.style.height = '50px';
+
+                    // Tính giá tiền dựa trên giờ cao điểm
+                    const isPeak = time.startsWith("16") || time.startsWith("17") || time.startsWith("18") || time.startsWith("19") || time.startsWith("20") || time.startsWith("21");
+                    const price = isPeak ? APP_STATE.selectedCourt.pricePeak : APP_STATE.selectedCourt.priceNormal;
+
+                    // Chỉ hiển thị giá tiền mờ mờ hoặc dấu check khi chọn để ô trống trông sạch sẽ giống mẫu
+                    if (status === "available") {
+                        tdSlot.innerHTML = `<span class="opacity-25 small" style="font-size: 10px; font-weight: 400;">${(price/1000)}k</span>`;
+                    } else if (status === "selected") {
+                        tdSlot.innerHTML = `<i class="fa-solid fa-check text-white" style="font-size: 12px;"></i>`;
+                    } else if (status === "booked") {
+                        tdSlot.style.backgroundColor = "#EF4444"; // Đỏ giống hình
+                        tdSlot.style.borderColor = "#F87171";
+                        tdSlot.innerHTML = "";
+                    } else if (status === "pending") {
+                        tdSlot.style.backgroundColor = "#94A3B8"; // Xám khóa giống hình
+                        tdSlot.style.borderColor = "#CBD5E1";
+                        tdSlot.innerHTML = "";
+                    }
+
+                    // Click handler
+                    if (status === "available" || status === "selected") {
+                        tdSlot.onclick = () => handleSelectSlot({
+                            courtSubId: sc.id,
+                            courtSubName: sc.name,
+                            timeSlot: time,
+                            price: price,
+                            key: slotKey
+                        });
+                    }
+
+                    tr.appendChild(tdSlot);
+                });
+
+                bodyContainer.appendChild(tr);
+            });
+        }
+
+        // Xử lý Click chọn/hủy chọn Slot giờ
+        function handleSelectSlot(slotObj) {
+            const index = APP_STATE.selectedSlots.findIndex(s => s.key === slotObj.key);
+            
+            if (index > -1) {
+                // Đã chọn trước đó -> Hủy chọn
+                APP_STATE.selectedSlots.splice(index, 1);
+            } else {
+                // Chưa chọn -> Thêm vào danh sách chọn
+                APP_STATE.selectedSlots.push(slotObj);
+            }
+            
+            // Vẽ lại bảng Grid và cập nhật sidebar
+            renderBookingGrid();
+            updateSummaryPanel();
+        }
+
+        // Cập nhật thanh bên tóm tắt đặt lịch
+        function updateSummaryPanel() {
+            const listContainer = document.getElementById('selected-slots-list');
+            const summaryTotal = document.getElementById('summary-total-price');
+
+            if (APP_STATE.selectedSlots.length === 0) {
+                listContainer.innerHTML = `<p class="text-muted text-center py-4">Chưa chọn khung giờ nào. Vui lòng bấm chọn ô giờ trống trên bảng.</p>`;
+                summaryTotal.innerText = '0đ';
+                return;
+            }
+
+            let total = 0;
+            let html = '<div class="d-flex flex-column gap-2">';
+            
+            APP_STATE.selectedSlots.forEach((slot, index) => {
+                total += slot.price;
+                html += `
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 border">
+                        <div>
+                            <span class="fw-bold text-primary-custom d-block">${slot.courtSubName}</span>
+                            <span class="small text-muted"><i class="fa-solid fa-clock me-1"></i>${slot.timeSlot} (${APP_STATE.selectedDate})</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-semibold">${slot.price.toLocaleString()}đ</span>
+                            <button class="btn btn-sm btn-link text-danger p-0" onclick="removeSlotByIndex(${index})"><i class="fa-solid fa-circle-xmark"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            listContainer.innerHTML = html;
+            summaryTotal.innerText = `${total.toLocaleString()}đ`;
+        }
+
+        function removeSlotByIndex(index) {
+            APP_STATE.selectedSlots.splice(index, 1);
+            renderBookingGrid();
+            updateSummaryPanel();
+        }
+
+        // Chuyển sang trang Thanh Toán
+        function proceedToCheckout() {
+            if (APP_STATE.selectedSlots.length === 0) {
+                alert("Vui lòng chọn ít nhất 1 khung giờ chơi trước khi thanh toán!");
+                return;
+            }
+            
+            // Điền thông tin tự động nếu đã đăng nhập
+            if (APP_STATE.currentUser) {
+                document.getElementById('customer-name').value = APP_STATE.currentUser.username;
+                document.getElementById('customer-email').value = "khach.dat@gmail.com";
+                document.getElementById('customer-phone').value = "0987654321";
+            }
+
+            // Render tóm tắt hóa đơn
+            const checkoutList = document.getElementById('checkout-selected-slots');
+            const checkoutTotal = document.getElementById('checkout-total-price');
+
+            let total = 0;
+            let html = `<h5 class="fw-bold mb-3 text-secondary">${APP_STATE.selectedCourt.name}</h5><div class="d-flex flex-column gap-2 mb-4">`;
+            
+            APP_STATE.selectedSlots.forEach(slot => {
+                total += slot.price;
+                html += `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary">${slot.courtSubName} (${slot.timeSlot})</span>
+                        <span class="fw-semibold">${slot.price.toLocaleString()}đ</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            checkoutList.innerHTML = html;
+            checkoutTotal.innerText = `${total.toLocaleString()}đ`;
+
+            switchView('checkout');
+        }
+
+        // Chọn phương thức thanh toán
+        function selectPaymentMethod(method) {
+            document.querySelectorAll('.payment-method-box').forEach(el => el.classList.remove('active'));
+            
+            if (method === 'qr') {
+                document.getElementById('pay-qr').checked = true;
+                document.getElementById('pay-qr').parentElement.classList.add('active');
+                document.getElementById('qr-code-section').classList.remove('d-none');
+            } else {
+                document.getElementById('pay-cod').checked = true;
+                document.getElementById('pay-cod').parentElement.classList.add('active');
+                document.getElementById('qr-code-section').classList.add('d-none');
+            }
+        }
+
+        // =========================================================================
+        // XÁC NHẬN ĐẶT SÂN & THANH TOÁN (CHECKOUT POST)
+        // =========================================================================
+        
+        function submitBooking() {
+            const name = document.getElementById('customer-name').value;
+            const phone = document.getElementById('customer-phone').value;
+            const email = document.getElementById('customer-email').value;
+
+            if (!name || !phone || !email) {
+                alert("Vui lòng điền đầy đủ họ tên, số điện thoại và email!");
+                return;
+            }
+
+            // Gửi dữ liệu lên API Backend: POST http://localhost:8081/court/booking/1
+            // Cấu trúc DTO gửi đi: BookingDTO
+            const newBooking = {
+                id: `BK-2026-000` + (APP_STATE.bookings.length + 1),
+                courtName: APP_STATE.selectedCourt.name,
+                startTime: `${APP_STATE.selectedDate} ${APP_STATE.selectedSlots[0].timeSlot.split(' - ')[0]}:00`,
+                endTime: `${APP_STATE.selectedDate} ${APP_STATE.selectedSlots[APP_STATE.selectedSlots.length - 1].timeSlot.split(' - ')[1]}:00`,
+                total: APP_STATE.selectedSlots.reduce((acc, curr) => acc + curr.price, 0),
+                status: document.getElementById('pay-qr').checked ? "CONFIRMED" : "PENDING"
+            };
+
+            // Thêm vào danh sách lịch sử trong state (Giả lập)
+            APP_STATE.bookings.unshift(newBooking);
+            
+            alert("Đặt sân thành công! Bạn đang được chuyển hướng về trang lịch sử đặt đơn.");
+            switchView('dashboard');
+        }
+
+        // =========================================================================
+        // LỊCH SỬ ĐẶT SÂN CỦA KHÁCH HÀNG (DASHBOARD)
+        // =========================================================================
+        
+        function fetchBookings() {
+            // GIẢ LẬP DỮ LIỆU: Thay thế bằng API: GET http://localhost:8081/court/booking/history
+            if (APP_STATE.bookings.length === 0) {
+                APP_STATE.bookings = [
+                    {
+                        id: "BK-2026-0010",
+                        courtName: "Sân Cầu Lông Thành Phát - Sân 1",
+                        startTime: "2026-06-15 08:00:00",
+                        endTime: "2026-06-15 10:00:00",
+                        total: 120000,
+                        status: "CONFIRMED"
+                    },
+                    {
+                        id: "BK-2026-0009",
+                        courtName: "Sân Pickleball Hoa Xuân - Sân 1",
+                        startTime: "2026-06-19 15:00:00",
+                        endTime: "2026-06-19 17:00:00",
+                        total: 160000,
+                        status: "CANCELLED"
+                    },
+                    {
+                        id: "BK-2026-0008",
+                        courtName: "Sân Bóng Đá Mini Thành Phát - Sân 5 Người",
+                        startTime: "2026-06-17 18:00:00",
+                        endTime: "2026-06-17 20:00:00",
+                        total: 1000000,
+                        status: "PENDING"
+                    }
+                ];
+            }
+            renderDashboardBookings("ALL");
+        }
+
+        // Lọc hiển thị hóa đơn lịch sử theo tab
+        function filterDashboard(status, element) {
+            document.querySelectorAll('.dashboard-tab .btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            renderDashboardBookings(status);
+        }
+
+        function renderDashboardBookings(filterStatus) {
+            const container = document.getElementById('bookings-history-list');
+            container.innerHTML = '';
+
+            let filtered = APP_STATE.bookings;
+            if (filterStatus !== "ALL") {
+                filtered = APP_STATE.bookings.filter(b => b.status === filterStatus);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-muted text-center py-5">Không tìm thấy đơn đặt lịch nào ở trạng thái này.</p>`;
+                return;
+            }
+
+            filtered.forEach(booking => {
+                let statusBadge = '';
+                if (booking.status === 'CONFIRMED') {
+                    statusBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-check me-2"></i>Đã xác nhận</span>`;
+                } else if (booking.status === 'PENDING') {
+                    statusBadge = `<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill"><i class="fa-solid fa-spinner fa-spin me-2"></i>Chờ xác nhận</span>`;
+                } else {
+                    statusBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill"><i class="fa-solid fa-circle-xmark me-2"></i>Đã hủy</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'booking-history-card';
+                card.innerHTML = `
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-5">
+                            <span class="text-primary-custom small fw-bold d-block mb-1">MÃ ĐƠN: ${booking.id}</span>
+                            <h5 class="fw-bold mb-0">${booking.courtName}</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-secondary small d-block"><i class="fa-solid fa-clock me-2"></i>${booking.startTime} đến ${booking.endTime.split(' ')[1]}</span>
+                            <span class="fw-bold text-dark fs-5">${booking.total.toLocaleString()}đ</span>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // =========================================================================
+        // ĐĂNG NHẬP / ĐĂNG KÝ (AUTH MODULE CONNECTS TO JWT API)
+        // =========================================================================
+        
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+
+        function showLoginModal() { loginModal.show(); }
+        function showRegisterModal() { registerModal.show(); }
+
+        // Xử lý Gửi Login API
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+            
+            // 1. Lấy thông tin tài khoản từ các ô nhập liệu trên giao diện
+            const u = document.getElementById('login-username').value;
+            const p = document.getElementById('login-password').value;
+            // 2. Gửi request POST lên API đăng nhập của Spring Boot
+            // (Nếu bạn chạy bằng Tomcat ngoài cổng 8080, hãy đổi 8081 thành 8080)
+            axios.post('http://localhost:8081/api/user/login', {
+                username: u,
+                password: p
+            })
+            .then(response => {
+                // HÀNH ĐỘNG KHI ĐĂNG NHẬP THÀNH CÔNG (Mã 200 OK)
+                const data = response.data; // Nhận Object trả về chứa { token, role, userId }
+                // 3. Lưu thông tin đăng nhập vào bộ nhớ trình duyệt (localStorage)
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('username', u);
+                // 4. Cập nhật trạng thái hoạt động của website
+                APP_STATE.token = data.token;
+                APP_STATE.currentUser = { 
+                    id: data.userId, 
+                    role: data.role, 
+                    username: u 
+                };
+                // 5. Cập nhật giao diện (Ẩn nút Đăng nhập, hiện tên User)
+                updateUIForLoggedInUser();
+                loginModal.hide();
+                alert("Đăng nhập hệ thống thành công!");
+                
+                // Tải lại lịch sử đặt sân của tài khoản vừa đăng nhập
+                fetchBookings();
+            })
+            .catch(error => {
+                // HÀNH ĐỘNG KHI ĐĂNG NHẬP THẤT BẠI (Mã 401 hoặc 403)
+                console.error("Lỗi đăng nhập:", error);
+                alert("Tài khoản hoặc mật khẩu không chính xác!");
+            });
+        }
+
+        // Xử lý Đăng ký Khách hàng mới
+        function handleRegisterSubmit(event) {
+            event.preventDefault();
+            alert("Đăng ký thành công! Vui lòng đăng nhập lại.");
+            registerModal.hide();
+            showLoginModal();
+        }
+
+        // Cập nhật giao diện sau khi đăng nhập thành công
+        function updateUIForLoggedInUser() {
+            document.getElementById('auth-buttons').classList.add('d-none');
+            document.getElementById('user-profile').classList.remove('d-none');
+            document.getElementById('user-display-name').innerText = APP_STATE.currentUser.username;
+        }
+
+        // Xử lý Đăng xuất
+        function handleLogout() {
+            localStorage.clear();
+            APP_STATE.token = null;
+            APP_STATE.currentUser = null;
+            
+            document.getElementById('auth-buttons').classList.remove('d-none');
+            document.getElementById('user-profile').classList.add('d-none');
+            alert("Đã đăng xuất khỏi tài khoản.");
+            switchView('home');
+        }
+    </script>
+</body>
+</html>

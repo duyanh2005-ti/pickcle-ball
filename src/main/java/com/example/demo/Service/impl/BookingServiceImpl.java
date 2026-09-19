@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,10 @@ import com.example.demo.Repository.ServiceRepository;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Service.BookingService;
 import com.example.demo.dto.BookingDTO;
+import com.example.demo.dto.BookingDetailDTO;
+import com.example.demo.dto.BookingListDTO;
 import com.example.demo.dto.BookingServiceDTO;
+import com.example.demo.dto.CustomUserDetails;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -49,7 +53,7 @@ public class BookingServiceImpl implements BookingService {
 
 	@Override
 	@Transactional
-	public void Booking(Long id, BookingDTO bookingDTO) {
+	public void Booking(Long id, BookingDTO bookingDTO,CustomUserDetails userDetails) {
 		// 1. Kiểm tra trùng lịch của sân dựa vào ID từ URL
 		boolean isOverlapped = bookingRepository.existsByCourtIdAndStatusNotAndStartTimeLessThanAndEndTimeGreaterThan(
 				id, "Cancelled", bookingDTO.getEndTime(), bookingDTO.getStartTime()
@@ -61,7 +65,7 @@ public class BookingServiceImpl implements BookingService {
 		// 2. Tìm Sân và Người dùng tương ứng
 		CourtsEntity court = courtrepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Không thấy sân"));
-		UsersEntity user = userRepository.findById(bookingDTO.getUserId())
+		UsersEntity user = userRepository.findById(userDetails.getUser().getId())
 				.orElseThrow(() -> new RuntimeException("Không thấy người dùng"));
 
 		// 3. Tính số giờ thuê sân
@@ -138,5 +142,101 @@ public class BookingServiceImpl implements BookingService {
 			savedBooking.setTotal(finalTotal);
 			bookingRepository.save(savedBooking);
 		}
+	}
+	@Override
+	public List<BookingListDTO> getAllBooking(CustomUserDetails userDetails){
+		List<BookingEntity> getList =bookingRepository.findByUserId(userDetails.getUser().getId());
+		List<BookingListDTO> listDTO =new ArrayList<>();
+		for(BookingEntity item : getList) {
+			BookingListDTO dto=new BookingListDTO();
+			dto.setCourtName(item.getCourt().getName());
+			dto.setCustomerName(item.getUser().getFullName());
+			dto.setEndTime(item.getEndTime());
+			dto.setStartTime(item.getStartTime());
+			dto.setStatus(item.getStatus());
+			dto.setTotal(item.getTotal());
+			listDTO.add(dto);
+		}
+		return listDTO;
+	}
+	@Override
+	public BookingDetailDTO getDetail(Long id) {
+		BookingEntity bookingEntity =bookingRepository.findById(id).orElseThrow(()->new RuntimeException("Khong tim thay don dat san!"));
+		BookingDetailDTO detailDto=new BookingDetailDTO();
+		detailDto.setCustomerName(bookingEntity.getUser().getFullName());
+		detailDto.setCourtName(bookingEntity.getCourt().getName());
+		detailDto.setAddress(bookingEntity.getCourt().getAddressDetail());
+		detailDto.setStartTime(bookingEntity.getStartTime());
+		detailDto.setEndTime(bookingEntity.getEndTime());
+		List<BookingServiceDTO> dtos = new ArrayList<>();
+		if(bookingEntity.getBookingService()!=null){
+			for(BookingServiceEntity item:bookingEntity.getBookingService()) {
+				BookingServiceDTO i = new BookingServiceDTO();
+				ServiceEntity service =serviceRepository.findById(item.getService().getId()).get();
+				i.setServiceName(service.getName());
+				i.setQuantity(item.getQuantity());
+				i.setUnitPrice(item.getUnitPrice());
+				i.setTotal(item.getTotal());
+				dtos.add(i);
+			}
+			detailDto.setBookingService(dtos);
+		}
+		detailDto.setTotal(bookingEntity.getTotal());
+		detailDto.setStatus(bookingEntity.getStatus());
+		return detailDto;
+	}
+	@Override
+	public List<BookingDTO> getBooking(Long id) {
+		List<BookingEntity> entity =bookingRepository.findByCourtOwnerId(id);
+		List<BookingDTO> dtos= new ArrayList<>();
+		for(BookingEntity i :entity) {
+			BookingDTO dto=new BookingDTO();
+			dto.setCourtName(i.getCourt().getName());
+			dto.setCustomerName(i.getUser().getFullName());
+			dto.setStartTime(i.getStartTime());
+			dto.setEndTime(i.getEndTime());
+			dto.setTotal(i.getTotal());
+			dto.setStatus(i.getStatus());
+			dtos.add(dto);
+		}
+		return dtos;
+	}
+	@Override
+	@Transactional
+	public void approveBooking(long id) {
+		BookingEntity booking=bookingRepository.findById(id).orElseThrow(()->new RuntimeException("Không thể tìm thấy đơn đặt sân!"));
+		if(!"PENDING".equalsIgnoreCase(booking.getStatus())) {
+			throw new RuntimeException("Chỉ có thể duyệt đơn ở trạng thái PENDING!");
+		}
+		booking.setStatus("CONFIRMED");
+		bookingRepository.save(booking);
+	}
+	@Override
+	@Transactional
+	public void cancelBooking(Long id) {
+		BookingEntity booking = bookingRepository.findById(id).orElseThrow(()->new RuntimeException("Không thể tìm thấy đơn đặt sân!"));
+		if("CONFIRMED".equalsIgnoreCase(booking.getStatus())) {
+			throw new RuntimeException("Không thể huỷ đơn đã xác nhận!");
+		}
+		if("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+			throw new RuntimeException("Đơn này đã được huỷ từ trước!");
+		}
+		booking.setStatus("CANCEL");
+		bookingRepository.save(booking);
+	}
+	public List<BookingDTO> getBookingCustomer(Long id){
+		List<BookingEntity> entity =bookingRepository.findByUserId(id);
+		List<BookingDTO> dtos= new ArrayList<>();
+		for(BookingEntity i :entity) {
+			BookingDTO dto=new BookingDTO();
+			dto.setCourtName(i.getCourt().getName());
+			dto.setCustomerName(i.getUser().getFullName());
+			dto.setStartTime(i.getStartTime());
+			dto.setEndTime(i.getEndTime());
+			dto.setTotal(i.getTotal());
+			dto.setStatus(i.getStatus());
+			dtos.add(dto);
+		}
+		return dtos;
 	}
 }

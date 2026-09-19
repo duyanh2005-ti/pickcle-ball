@@ -1,10 +1,10 @@
 package com.example.demo.dto;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
 
 public class BookingDTO {
+	
 	private Long id;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
@@ -12,6 +12,28 @@ public class BookingDTO {
 	private String status;
 	private Long courtId;
 	private Long userId;
+	private String courtName;
+	private String customerName;
+	private List<String> serviceName;
+
+	public List<String> getServiceName() {
+		return serviceName;
+	}
+	public void setServiceName(List<String> serviceName) {
+		this.serviceName = serviceName;
+	}
+	public String getCourtName() {
+		return courtName;
+	}
+	public void setCourtName(String courtName) {
+		this.courtName = courtName;
+	}
+	public String getCustomerName() {
+		return customerName;
+	}
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
 	private List<BookingServiceDTO> bookingService;
 	
 	public List<BookingServiceDTO> getBookingService() {
