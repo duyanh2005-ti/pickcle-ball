@@ -21,7 +21,14 @@ public class CourtDTO {
 	private String status;
 	private String image;
 	List<PriceConfigDTO> priceConfig;
+	private Long ownerId;
 	
+	public Long getOwnerId() {
+		return ownerId;
+	}
+	public void setOwnerId(Long ownerId) {
+		this.ownerId = ownerId;
+	}
 	public List<PriceConfigDTO> getPriceConfig() {
 		return priceConfig;
 	}

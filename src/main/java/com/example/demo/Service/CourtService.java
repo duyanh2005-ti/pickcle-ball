@@ -9,7 +9,7 @@ import com.example.demo.dto.CourtDTO;
 import com.example.demo.dto.CustomUserDetails;
 
 public interface CourtService {
-	public List<CourtsEntity> searchCourts(String name,String city, String district);
+	public List<CourtDTO> searchCourts(String name,String city, String district);
 	public void updateCourt(Long Id,CourtDTO Court);
 	public void deleteCourts(List<Long> ids );
 	public void addCourt(CourtDTO Court ,CustomUserDetails userDetails);

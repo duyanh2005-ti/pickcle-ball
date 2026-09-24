@@ -1,5 +1,6 @@
 package com.example.demo.Service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,5 +47,19 @@ public class ServiceServiceImpl implements ServiceService{
 	}
 	public void deleteService(List<Long> id) {
 		serviceRepository.deleteAllById(id);;
+	}
+	@Override
+	public List<ServiceDTO> getAll(){
+		List<ServiceDTO> dto= new ArrayList<>();
+		for(ServiceEntity e : serviceRepository.findAll()) {
+			ServiceDTO p= new ServiceDTO();
+			p.setId(e.getId());
+			p.setName(e.getName());
+			p.setImage(e.getImage());
+			p.setPrice(e.getPrice());
+			p.setUnit(e.getUnit());
+			dto.add(p);
+		}
+		return dto;
 	}
 }

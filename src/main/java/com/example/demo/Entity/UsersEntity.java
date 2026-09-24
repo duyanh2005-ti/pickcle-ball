@@ -22,6 +22,7 @@ public class UsersEntity {
 	private Long id;
 	@Column(name="nameuser")
 	private String name;
+	@JsonIgnore
 	@Column(name="password")
 	private String passWord;
 	@Column(name="full_name")

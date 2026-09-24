@@ -42,6 +42,7 @@ public class CourtsEntity {
 	@JsonIgnore
 	@OneToMany(mappedBy="court",fetch=FetchType.LAZY)
 	private List<BookingEntity> booking=new ArrayList<>();
+	@JsonIgnore
 	@OneToMany(mappedBy = "courts", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PriceConfigEntity> priceConfig = new ArrayList<>();
 	@ManyToOne

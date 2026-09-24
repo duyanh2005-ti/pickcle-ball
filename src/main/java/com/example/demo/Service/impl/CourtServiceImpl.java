@@ -1,6 +1,7 @@
 package com.example.demo.Service.impl;
 
 import java.util.ArrayList;
+import com.example.demo.conversion.conversCourt;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -25,13 +26,15 @@ public class CourtServiceImpl implements CourtService {
 	private CourtRepository courtRepository;
 	@Autowired
 	private ModelMapper modelMapper;
+	
 	@Override
-	public List<CourtsEntity> searchCourts(String name,String city, String district){
-		List<CourtsEntity> courts = courtRepository.searchCourts(name,city,district);
-		return courts;
+	public List<CourtDTO> searchCourts(String name, String city, String district) {
+		return courtRepository.searchCourts(name, city, district).stream().map(conversCourt::toDTO).toList();
 	}
-	public void updateCourt(Long Id,CourtDTO Court){
-		CourtsEntity court = courtRepository.findById(Id).orElseThrow(()->new RuntimeException("Không tìm thấy sân có ID:"+Id));
+	@Override
+	public void updateCourt(Long Id, CourtDTO Court) {
+		CourtsEntity court = courtRepository.findById(Id)
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy sân có ID:" + Id));
 		court.setName(Court.getName());
 		court.setAddressDetail(Court.getAddressDetail());
 		court.setType(Court.getType());
@@ -46,7 +49,8 @@ public class CourtServiceImpl implements CourtService {
 	public void deleteCourts(List<Long> ids) {
 		courtRepository.deleteAllById(ids);
 	}
-	public void addCourt(CourtDTO Court,CustomUserDetails userDetails) {
+
+	public void addCourt(CourtDTO Court, CustomUserDetails userDetails) {
 		CourtsEntity court = new CourtsEntity();
 		court.setAddressDetail(Court.getAddressDetail());
 		court.setDistrict(Court.getDistrict());
@@ -58,27 +62,28 @@ public class CourtServiceImpl implements CourtService {
 		court.setType(Court.getType());
 		court.setOwner(userDetails.getUser());
 		if (court.getPriceConfig() == null) {
-	        court.setPriceConfig(new ArrayList<>());
-	    }
-		if(Court.getPriceConfig() != null && !Court.getPriceConfig().isEmpty()) {
-			for(PriceConfigDTO priceConfig: Court.getPriceConfig()) {
+			court.setPriceConfig(new ArrayList<>());
+		}
+		if (Court.getPriceConfig() != null && !Court.getPriceConfig().isEmpty()) {
+			for (PriceConfigDTO priceConfig : Court.getPriceConfig()) {
 				PriceConfigEntity item = new PriceConfigEntity();
 				item.setStartTime(priceConfig.getStartTime());
 				item.setEndTime(priceConfig.getEndTime());
 				item.setDayOfWeek(priceConfig.getDayOfWeek());
 				item.setPricePerHour(priceConfig.getPricePerHour());
-				item.setCourt(court); 
-				court.getPriceConfig().add(item); 
+				item.setCourt(court);
+				court.getPriceConfig().add(item);
 			}
 		}
 		courtRepository.save(court);
 	}
+
 	@Override
-	public Page<CourtDTO> ownerGetAll(Long id ,int size,int page) {
-		Pageable pageable = PageRequest.of(page,size, Sort.by(Sort.Direction.DESC,"id"));
+	public Page<CourtDTO> ownerGetAll(Long id, int size, int page) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 		Page<CourtsEntity> CourtsPage = courtRepository.findByownerId(id, pageable);
-		Page<CourtDTO> dto =CourtsPage.map(item->{
-			CourtDTO i= new CourtDTO();
+		Page<CourtDTO> dto = CourtsPage.map(item -> {
+			CourtDTO i = new CourtDTO();
 			i.setName(item.getName());
 			i.setCity(item.getCity());
 			i.setDescription(item.getDescription());
@@ -91,11 +96,12 @@ public class CourtServiceImpl implements CourtService {
 		});
 		return dto;
 	}
+
 	@Override
-	public Page<CourtDTO> getAll(int page, int size){
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC,"id"));
-		Page<CourtsEntity> courtsPage =courtRepository.findAll(pageable);
-		Page<CourtDTO> dtoPage =courtsPage.map(item->{
+	public Page<CourtDTO> getAll(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+		Page<CourtsEntity> courtsPage = courtRepository.findAll(pageable);
+		Page<CourtDTO> dtoPage = courtsPage.map(item -> {
 			CourtDTO i = new CourtDTO();
 			i.setName(item.getName());
 			i.setCity(item.getCity());

@@ -8,4 +8,5 @@ public interface ServiceService {
 	public void addService(ServiceDTO serviceDTO);
 	public void update(Long id, ServiceDTO serviceDTO);
 	public void deleteService(List<Long> id);
+	public List<ServiceDTO> getAll();
 }

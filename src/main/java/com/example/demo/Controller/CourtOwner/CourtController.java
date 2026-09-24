@@ -27,10 +27,10 @@ public class CourtController {
 	@Autowired 
 	private CourtService courtService;
 	@GetMapping
-	public  List<CourtsEntity> getCourt(@RequestParam(required=false) String name,
+	public  List<CourtDTO> getCourt(@RequestParam(required=false) String name,
 									    @RequestParam(required=false)String city,
 									    @RequestParam(required=false) String district){
-		List<CourtsEntity> Courts=courtService.searchCourts(name,city,district);
+		List<CourtDTO> Courts=courtService.searchCourts(name,city,district);
 		return Courts;
 	}
 	@PostMapping(value="/edit-{id}")

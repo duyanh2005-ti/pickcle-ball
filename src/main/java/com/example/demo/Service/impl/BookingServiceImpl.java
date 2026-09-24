@@ -149,6 +149,7 @@ public class BookingServiceImpl implements BookingService {
 		List<BookingListDTO> listDTO =new ArrayList<>();
 		for(BookingEntity item : getList) {
 			BookingListDTO dto=new BookingListDTO();
+			dto.setId(item.getId());
 			dto.setCourtName(item.getCourt().getName());
 			dto.setCustomerName(item.getUser().getFullName());
 			dto.setEndTime(item.getEndTime());
@@ -197,6 +198,8 @@ public class BookingServiceImpl implements BookingService {
 			dto.setEndTime(i.getEndTime());
 			dto.setTotal(i.getTotal());
 			dto.setStatus(i.getStatus());
+			dto.setId(i.getId());
+			dto.setCourtId(i.getCourt().getId());
 			dtos.add(dto);
 		}
 		return dtos;
@@ -235,6 +238,8 @@ public class BookingServiceImpl implements BookingService {
 			dto.setEndTime(i.getEndTime());
 			dto.setTotal(i.getTotal());
 			dto.setStatus(i.getStatus());
+			dto.setId(i.getId());
+			dto.setCourtId(i.getCourt().getId());
 			dtos.add(dto);
 		}
 		return dtos;
