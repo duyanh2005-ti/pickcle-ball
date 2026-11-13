@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -48,6 +49,14 @@ public class ApiExceptionHandler {
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<String> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
 		return ResponseEntity.badRequest().body("Tham số '" + ex.getName() + "' không hợp lệ!");
+	}
+
+	/** Vi phạm ràng buộc DB: trùng tên đăng nhập, xoá sân đang có đơn đặt (khoá ngoại)... */
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<String> handleDataIntegrity(DataIntegrityViolationException ex) {
+		log.warn("Vi phạm ràng buộc dữ liệu: {}", ex.getMostSpecificCause().getMessage());
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body("Dữ liệu bị trùng hoặc đang được sử dụng ở nơi khác, không thể thực hiện!");
 	}
 
 	/** Mọi lỗi còn lại: giữ mã HTTP chuẩn của Spring nếu có, nếu không thì 500 và không lộ chi tiết. */

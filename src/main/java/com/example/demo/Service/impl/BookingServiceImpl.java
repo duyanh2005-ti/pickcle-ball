@@ -42,6 +42,7 @@ public class BookingServiceImpl implements BookingService {
 
 	private static final String WEEKEND = "Cuối tuần";
 	private static final String WEEKDAY = "Ngày thường";
+	private static final String EVERYDAY = "Mỗi ngày";
 
 	@Autowired
 	private BookingRepository bookingRepository;
@@ -148,6 +149,13 @@ public class BookingServiceImpl implements BookingService {
 						+ cursor.toLocalTime() + " (" + dayType(cursor.getDayOfWeek()) + "), không thể đặt!");
 			}
 			LocalDateTime slotEnd = slotEnd(cursor.toLocalDate(), config);
+			if (EVERYDAY.equalsIgnoreCase(config.getDayOfWeek().trim())) {
+				// Khung "Mỗi ngày" chỉ dùng đến khi bắt đầu một khung giá riêng (ưu tiên hơn)
+				LocalDateTime nextSpecific = nextSpecificStart(configs, cursor);
+				if (nextSpecific != null && nextSpecific.isBefore(slotEnd)) {
+					slotEnd = nextSpecific;
+				}
+			}
 			LocalDateTime segmentEnd = end.isBefore(slotEnd) ? end : slotEnd;
 			double hours = Duration.between(cursor, segmentEnd).toSeconds() / 3600.0;
 			total += hours * config.getPricePerHour();
@@ -156,8 +164,16 @@ public class BookingServiceImpl implements BookingService {
 		return total;
 	}
 
+	/**
+	 * Tìm khung giá áp dụng tại thời điểm {@code at}. Khung giá riêng cho
+	 * "Ngày thường"/"Cuối tuần" được ưu tiên hơn khung "Mỗi ngày".
+	 */
 	private PriceConfigEntity findPriceConfig(List<PriceConfigEntity> configs, LocalDateTime at) {
-		String day = dayType(at.getDayOfWeek());
+		PriceConfigEntity specific = findPriceConfig(configs, at, dayType(at.getDayOfWeek()));
+		return specific != null ? specific : findPriceConfig(configs, at, EVERYDAY);
+	}
+
+	private PriceConfigEntity findPriceConfig(List<PriceConfigEntity> configs, LocalDateTime at, String day) {
 		LocalTime time = at.toLocalTime();
 		for (PriceConfigEntity item : configs) {
 			if (item.getDayOfWeek() == null || item.getStartTime() == null || item.getEndTime() == null
@@ -175,6 +191,27 @@ public class BookingServiceImpl implements BookingService {
 			}
 		}
 		return null;
+	}
+
+	/** Giờ bắt đầu sớm nhất (sau {@code at}, trong cùng ngày) của một khung giá riêng cho loại ngày đó. */
+	private LocalDateTime nextSpecificStart(List<PriceConfigEntity> configs, LocalDateTime at) {
+		String day = dayType(at.getDayOfWeek());
+		LocalTime time = at.toLocalTime();
+		LocalDateTime earliest = null;
+		for (PriceConfigEntity item : configs) {
+			if (item.getDayOfWeek() == null || item.getStartTime() == null || item.getPricePerHour() == null
+					|| !day.equalsIgnoreCase(item.getDayOfWeek().trim())) {
+				continue;
+			}
+			LocalTime start = item.getStartTime().toLocalTime();
+			if (start.isAfter(time)) {
+				LocalDateTime candidate = at.toLocalDate().atTime(start);
+				if (earliest == null || candidate.isBefore(earliest)) {
+					earliest = candidate;
+				}
+			}
+		}
+		return earliest;
 	}
 
 	private LocalDateTime slotEnd(LocalDate date, PriceConfigEntity config) {

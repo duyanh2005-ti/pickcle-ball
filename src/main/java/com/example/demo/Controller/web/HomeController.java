@@ -1,5 +1,6 @@
 package com.example.demo.Controller.web;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.Service.CourtService;
 import com.example.demo.dto.CourtDTO;
 
+@Tag(name = "Trang chủ", description = "Danh sách sân có phân trang (công khai)")
 @RestController
 public class HomeController {
 	@Autowired

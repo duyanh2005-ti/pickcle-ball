@@ -1,5 +1,6 @@
 package com.example.demo.Controller.web;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import com.example.demo.dto.UserResponseDTO;
 
 import jakarta.validation.Valid;
 
+@Tag(name = "Người dùng", description = "Đăng ký, đăng nhập, lịch sử đặt sân")
 @RestController
 @RequestMapping(value="/api/user")
 public class UserController {

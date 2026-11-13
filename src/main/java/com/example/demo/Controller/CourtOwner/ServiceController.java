@@ -1,5 +1,6 @@
 package com.example.demo.Controller.CourtOwner;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.Service.ServiceService;
 import com.example.demo.dto.ServiceDTO;
 
+@Tag(name = "Dịch vụ", description = "Quản lý dịch vụ đi kèm (chủ sân, admin)")
 @RestController
 @RequestMapping("/api/service")
 public class ServiceController {

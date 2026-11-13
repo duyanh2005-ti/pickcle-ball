@@ -143,6 +143,34 @@ class BookingServiceImplTest {
 	}
 
 	@Test
+	void datSan_bangGiaMoiNgay_apDungChoCaTuan() {
+		LocalDate sunday = nextMonday.plusDays(6);
+		givenBookableCourt(List.of(price("Mỗi ngày", 6, 22, 120_000)));
+		bookingService.Booking(COURT_ID, booking(sunday.atTime(7, 0), sunday.atTime(8, 0)), me(customer));
+		assertThat(captureSavedBooking().getTotal()).isEqualTo(120_000);
+	}
+
+	@Test
+	void datSan_coCaGiaRiengVaMoiNgay_uuTienGiaRieng() {
+		// 17:00-19:00 thứ Hai: 17-18 dùng giá "Ngày thường" 100k, 18-19 chỉ có "Mỗi ngày" 150k
+		givenBookableCourt(List.of(
+				price("Mỗi ngày", 6, 22, 150_000),
+				price("Ngày thường", 6, 18, 100_000)));
+		bookingService.Booking(COURT_ID, booking(nextMonday.atTime(17, 0), nextMonday.atTime(19, 0)), me(customer));
+		assertThat(captureSavedBooking().getTotal()).isEqualTo(250_000);
+	}
+
+	@Test
+	void datSan_khungMoiNgayGapKhungRiengGiuaChung_doiGiaDungLuc() {
+		// "Mỗi ngày" 6-22 giá 100k, "Ngày thường" 18-22 giá 200k. Đặt 17:00-19:00 => 100k + 200k
+		givenBookableCourt(List.of(
+				price("Mỗi ngày", 6, 22, 100_000),
+				price("Ngày thường", 18, 22, 200_000)));
+		bookingService.Booking(COURT_ID, booking(nextMonday.atTime(17, 0), nextMonday.atTime(19, 0)), me(customer));
+		assertThat(captureSavedBooking().getTotal()).isEqualTo(300_000);
+	}
+
+	@Test
 	void datSan_khongCoBangGiaChoKhungGio_bao400_khongTaoDon0d() {
 		when(courtrepository.findByIdForUpdate(COURT_ID)).thenReturn(Optional.of(court));
 		when(userRepository.findById(customer.getId())).thenReturn(Optional.of(customer));

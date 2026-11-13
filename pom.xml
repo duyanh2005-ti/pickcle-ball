@@ -39,6 +39,23 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Flyway: quản lý schema DB bằng các file SQL có đánh số phiên bản (db/migration) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+		</dependency>
+
+		<!-- Swagger UI / OpenAPI: tài liệu API tại /swagger-ui.html (bản 3.0.x dành cho Spring Boot 4.0) -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>

@@ -1,5 +1,6 @@
 package com.example.demo.Controller.web;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import com.example.demo.dto.BookingListDTO;
 import com.example.demo.dto.CustomUserDetails;
 
 // Lỗi nghiệp vụ (400/403/404/409) được ApiExceptionHandler chuyển thành response tương ứng
+@Tag(name = "Đặt sân", description = "Đặt sân, lịch sử, duyệt/huỷ đơn")
 @RestController
 @RequestMapping("/court/booking")
 public class BookingController {

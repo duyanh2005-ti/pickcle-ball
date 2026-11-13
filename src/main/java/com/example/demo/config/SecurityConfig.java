@@ -58,6 +58,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Các API cho phép mọi người truy cập công khai (Không cần đăng nhập)
                         .requestMatchers("/error").permitAll()
+                        // Swagger UI + tài liệu OpenAPI (tắt hẳn ở production bằng SWAGGER_ENABLED=false)
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/","/court" ,"/index.html", "/static/**", "/css/**", "/js/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/user/register", "/api/user/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/court", "/api/court/**").permitAll() // Ai cũng được xem danh sách sân

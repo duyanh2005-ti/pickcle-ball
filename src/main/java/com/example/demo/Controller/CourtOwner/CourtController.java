@@ -1,5 +1,6 @@
 package com.example.demo.Controller.CourtOwner;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import com.example.demo.dto.CustomUserDetails;
 
 import jakarta.validation.Valid;
 
+@Tag(name = "Sân", description = "Tìm sân (công khai), thêm/sửa/xoá sân (chủ sân, admin)")
 @RestController(value="CourtControllerOfAdmin")
 @RequestMapping("/api/court")
 public class CourtController {
