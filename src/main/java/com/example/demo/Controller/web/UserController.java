@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,9 +25,9 @@ import com.example.demo.dto.CustomUserDetails;
 import com.example.demo.dto.LoginDTO;
 import com.example.demo.dto.LoginResponseDTO;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.dto.UserResponseDTO;
 
 import jakarta.validation.Valid;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(value="/api/user")
@@ -38,20 +37,10 @@ public class UserController {
 	@Autowired
 	UserService userService;
 	@PostMapping(value="/register")
-	public ResponseEntity<?> creatUser(@Valid @RequestBody UserDTO userDTO,BindingResult result){
-		try{
-			if(result.hasErrors()){
-				List<String> errorMessages =result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
-				return ResponseEntity.badRequest().body(errorMessages);
-			}
-			UsersEntity user =userService.creatUser(userDTO);
-			return ResponseEntity.ok(user);
-		}catch(ResponseStatusException ex){
-			// Ví dụ: 409 khi tên đăng nhập đã tồn tại
-			return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
-		}catch(Exception ex){
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-		}
+	public ResponseEntity<UserResponseDTO> creatUser(@Valid @RequestBody UserDTO userDTO){
+		// Lỗi validate (400, danh sách thông báo) và trùng tên đăng nhập (409) do ApiExceptionHandler xử lý
+		UsersEntity user = userService.creatUser(userDTO);
+		return ResponseEntity.ok(UserResponseDTO.from(user));
 	}
 	@Autowired
 	private AuthenticationManager authenticationManager;
