@@ -7,7 +7,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.example.demo.enums.BookingStatus;
+import com.example.demo.enums.BookingStatusConverter;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,7 +35,8 @@ public class BookingEntity {
 	@Column(name="total")
 	private Double total;
 	@Column(name="status")
-	private String status;
+	@Convert(converter = BookingStatusConverter.class)
+	private BookingStatus status;
 	@ManyToOne
 	@JoinColumn(name="user_id")
 	private UsersEntity user;
@@ -65,10 +70,10 @@ public class BookingEntity {
 	public void setTotal(Double total) {
 		this.total = total;
 	}
-	public String getStatus() {
+	public BookingStatus getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(BookingStatus status) {
 		this.status = status;
 	}
 	public UsersEntity getUser() {

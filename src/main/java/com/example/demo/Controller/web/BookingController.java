@@ -19,52 +19,49 @@ import com.example.demo.dto.BookingDTO;
 import com.example.demo.dto.BookingDetailDTO;
 import com.example.demo.dto.BookingListDTO;
 import com.example.demo.dto.CustomUserDetails;
+
+// Lỗi nghiệp vụ (400/403/404/409) được ApiExceptionHandler chuyển thành response tương ứng
 @RestController
 @RequestMapping("/court/booking")
 public class BookingController {
-	@Autowired 
+	@Autowired
 	private BookingService bookingService;
+
 	@PostMapping("/{id}")
-	public ResponseEntity<String> createBooking(@PathVariable ("id") Long id,@RequestBody BookingDTO bookingDTO, @AuthenticationPrincipal CustomUserDetails userDetails){
-		try{
-			bookingService.Booking(id,bookingDTO,userDetails);
-			return new ResponseEntity<>("Đặt sân thành công!", HttpStatus.CREATED);
-		}catch(RuntimeException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
+	public ResponseEntity<String> createBooking(@PathVariable("id") Long id, @RequestBody BookingDTO bookingDTO,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		bookingService.Booking(id, bookingDTO, userDetails);
+		return new ResponseEntity<>("Đặt sân thành công!", HttpStatus.CREATED);
 	}
+
 	@GetMapping("/history")
 	public List<BookingListDTO> history(@AuthenticationPrincipal CustomUserDetails userDetails) {
-		List<BookingListDTO> getAll= bookingService.getAllBooking(userDetails);
-		return getAll;
+		return bookingService.getAllBooking(userDetails);
 	}
+
 	@GetMapping("/history/{id}")
-	public BookingDetailDTO detail(@PathVariable ("id") Long id) {
-		BookingDetailDTO getDetail=bookingService.getDetail(id);
-		return getDetail;
+	public BookingDetailDTO detail(@PathVariable("id") Long id,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return bookingService.getDetail(id, userDetails);
 	}
+
 	@GetMapping("/owner/{owner_id}")
-	public List<BookingDTO> getBookingOfOwner(@PathVariable ("owner_id") Long id){
-		List<BookingDTO> getBooking=bookingService.getBooking(id);
-		return getBooking;
+	public List<BookingDTO> getBookingOfOwner(@PathVariable("owner_id") Long id,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		return bookingService.getBooking(id, userDetails);
 	}
+
 	@PutMapping("/approve/{id}")
-	public ResponseEntity<String> approveBooking(@PathVariable("id") Long id) {
-	    try {
-	        bookingService.approveBooking(id);
-	        return ResponseEntity.ok("Duyệt đơn đặt sân thành công!");
-	    } catch (RuntimeException e) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-	    }
+	public ResponseEntity<String> approveBooking(@PathVariable("id") Long id,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		bookingService.approveBooking(id, userDetails);
+		return ResponseEntity.ok("Duyệt đơn đặt sân thành công!");
 	}
 
 	@PutMapping("/cancel/{id}")
-	public ResponseEntity<String> cancelBooking(@PathVariable("id") Long id) {
-	    try {
-	        bookingService.cancelBooking(id);
-	        return ResponseEntity.ok("Hủy đơn đặt sân thành công!");
-	    } catch (RuntimeException e) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-	    }
+	public ResponseEntity<String> cancelBooking(@PathVariable("id") Long id,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		bookingService.cancelBooking(id, userDetails);
+		return ResponseEntity.ok("Hủy đơn đặt sân thành công!");
 	}
 }

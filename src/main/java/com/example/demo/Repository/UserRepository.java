@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.demo.Entity.UsersEntity;
 
 public interface UserRepository extends JpaRepository<UsersEntity,Long>{
-	public Optional<UsersEntity> findByName(String Name); 
+	public Optional<UsersEntity> findByName(String Name);
+	public boolean existsByName(String name);
 }

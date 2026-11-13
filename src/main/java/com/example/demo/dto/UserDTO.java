@@ -2,18 +2,20 @@ package com.example.demo.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public class UserDTO {
-    @JsonProperty("name")
-    @NotBlank(message = "Tên đăng nhập không được để trống")
+	@JsonProperty("name")
+	@NotBlank(message = "Tên đăng nhập không được để trống")
 	private String name;
-    @JsonProperty("pass_word")
-    @NotBlank(message = "mật khẩu không được để trống")
+	@JsonProperty("pass_word")
+	@NotBlank(message = "mật khẩu không được để trống")
+	@Size(min = 6, max = 72, message = "Mật khẩu phải từ 6 đến 72 ký tự")
 	private String passWord;
-    @JsonProperty("full_name")
-    @NotBlank(message = "Họ và tên không được để trống")
+	@JsonProperty("full_name")
+	@NotBlank(message = "Họ và tên không được để trống")
 	private String fullName;
-    @NotBlank(message = "Email is required")
+	@NotBlank(message = "Email is required")
 	private String email;
 	@NotBlank(message = "Phone number is required")
 	private String phone;
@@ -55,5 +57,6 @@ public class UserDTO {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-	
+
 }
+

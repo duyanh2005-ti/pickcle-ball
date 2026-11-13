@@ -34,12 +34,14 @@ public class CourtController {
 		return Courts;
 	}
 	@PostMapping(value="/edit-{id}")
-	public void updateCourt(@PathVariable("id") Long Id,@RequestBody CourtDTO Court ) {
-		courtService.updateCourt(Id,Court);
+	public void updateCourt(@PathVariable("id") Long Id,@RequestBody CourtDTO Court,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		courtService.updateCourt(Id,Court,userDetails);
 	}
 	@PostMapping(value="/{ids}")
-	public void deleteCourts(@PathVariable("ids") List<Long> ids) {
-		courtService.deleteCourts(ids);
+	public void deleteCourts(@PathVariable("ids") List<Long> ids,
+			@AuthenticationPrincipal CustomUserDetails userDetails) {
+		courtService.deleteCourts(ids,userDetails);
 	}
 	@PostMapping(value="/edit")
 	public void addCourt(@Valid @RequestBody CourtDTO Court,@AuthenticationPrincipal CustomUserDetails userDetails) {

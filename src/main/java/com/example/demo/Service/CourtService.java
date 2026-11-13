@@ -10,9 +10,9 @@ import com.example.demo.dto.CustomUserDetails;
 
 public interface CourtService {
 	public List<CourtDTO> searchCourts(String name,String city, String district);
-	public void updateCourt(Long Id,CourtDTO Court);
-	public void deleteCourts(List<Long> ids );
+	public void updateCourt(Long Id,CourtDTO Court, CustomUserDetails currentUser);
+	public void deleteCourts(List<Long> ids, CustomUserDetails currentUser);
 	public void addCourt(CourtDTO Court ,CustomUserDetails userDetails);
-	public Page<CourtDTO> ownerGetAll(Long id,int size,int page);
+	public Page<CourtDTO> ownerGetAll(Long id,int page,int size);
 	public Page<CourtDTO> getAll(int page, int size);
 }

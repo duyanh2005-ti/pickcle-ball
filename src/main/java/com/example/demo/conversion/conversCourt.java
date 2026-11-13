@@ -11,6 +11,7 @@ import com.example.demo.dto.PriceConfigDTO;
 public  class  conversCourt {
 	public static CourtDTO toDTO(CourtsEntity courtEntity) {
 		CourtDTO dto= new CourtDTO();
+		dto.setId(courtEntity.getId());
 		dto.setName(courtEntity.getName());
 		dto.setCity(courtEntity.getCity());
 		dto.setDistrict(courtEntity.getDistrict());

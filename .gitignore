@@ -1,4 +1,9 @@
 HELP.md
+
+### Cấu hình chứa mật khẩu / secret (chỉ commit file .example) ###
+config/application-*.properties
+!config/application-*.properties.example
+.env
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

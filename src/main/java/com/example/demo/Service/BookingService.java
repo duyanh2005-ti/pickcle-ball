@@ -8,11 +8,11 @@ import com.example.demo.dto.BookingListDTO;
 import com.example.demo.dto.CustomUserDetails;
 
 public interface BookingService {
-	public void Booking(Long id,BookingDTO bookingDTO,CustomUserDetails userDetails);
-	public List<BookingListDTO> getAllBooking(CustomUserDetails userDetails);
-	public BookingDetailDTO getDetail(Long id);
-	public List<BookingDTO> getBooking(Long id);
-	public void approveBooking(long id);
-	public void cancelBooking(Long id);
-	public List<BookingDTO> getBookingCustomer(Long id);
+	public void Booking(Long courtId, BookingDTO bookingDTO, CustomUserDetails currentUser);
+	public List<BookingListDTO> getAllBooking(CustomUserDetails currentUser);
+	public BookingDetailDTO getDetail(Long id, CustomUserDetails currentUser);
+	public List<BookingDTO> getBooking(Long ownerId, CustomUserDetails currentUser);
+	public void approveBooking(Long id, CustomUserDetails currentUser);
+	public void cancelBooking(Long id, CustomUserDetails currentUser);
+	public List<BookingDTO> getBookingCustomer(Long userId);
 }

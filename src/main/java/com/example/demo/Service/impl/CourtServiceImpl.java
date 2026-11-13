@@ -2,7 +2,9 @@ package com.example.demo.Service.impl;
 
 import java.util.ArrayList;
 import com.example.demo.conversion.conversCourt;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.exception.ForbiddenException;
+import com.example.demo.exception.NotFoundException;
 
 import com.example.demo.Entity.CourtsEntity;
 import com.example.demo.Entity.PriceConfigEntity;
@@ -32,9 +38,10 @@ public class CourtServiceImpl implements CourtService {
 		return courtRepository.searchCourts(name, city, district).stream().map(conversCourt::toDTO).toList();
 	}
 	@Override
-	public void updateCourt(Long Id, CourtDTO Court) {
+	public void updateCourt(Long Id, CourtDTO Court, CustomUserDetails currentUser) {
 		CourtsEntity court = courtRepository.findById(Id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy sân có ID:" + Id));
+				.orElseThrow(() -> new NotFoundException("Không tìm thấy sân có ID:" + Id));
+		checkOwner(court, currentUser);
 		court.setName(Court.getName());
 		court.setAddressDetail(Court.getAddressDetail());
 		court.setType(Court.getType());
@@ -43,11 +50,30 @@ public class CourtServiceImpl implements CourtService {
 		court.setDistrict(Court.getDistrict());
 		court.setStatus(Court.getStatus());
 		court.setImage(Court.getImage());
-//		modelMapper.map(Court, court);
 		courtRepository.save(court);
 	}
-	public void deleteCourts(List<Long> ids) {
-		courtRepository.deleteAllById(ids);
+	@Override
+	@Transactional
+	public void deleteCourts(List<Long> ids, CustomUserDetails currentUser) {
+		List<CourtsEntity> courts = courtRepository.findAllById(ids);
+		if (courts.size() != new HashSet<>(ids).size()) {
+			throw new NotFoundException("Có sân không tồn tại trong danh sách cần xoá!");
+		}
+		// Chỉ xoá khi tất cả các sân đều thuộc người đang đăng nhập (hoặc là admin)
+		for (CourtsEntity court : courts) {
+			checkOwner(court, currentUser);
+		}
+		courtRepository.deleteAll(courts);
+	}
+
+	private void checkOwner(CourtsEntity court, CustomUserDetails currentUser) {
+		if ("ADMIN".equalsIgnoreCase(currentUser.getUser().getRole())) {
+			return;
+		}
+		Long ownerId = court.getOwner() == null ? null : court.getOwner().getId();
+		if (!Objects.equals(ownerId, currentUser.getUser().getId())) {
+			throw new ForbiddenException("Bạn chỉ được thao tác trên sân của mình (ID sân: " + court.getId() + ")");
+		}
 	}
 
 	public void addCourt(CourtDTO Court, CustomUserDetails userDetails) {
@@ -79,40 +105,16 @@ public class CourtServiceImpl implements CourtService {
 	}
 
 	@Override
-	public Page<CourtDTO> ownerGetAll(Long id, int size, int page) {
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-		Page<CourtsEntity> CourtsPage = courtRepository.findByownerId(id, pageable);
-		Page<CourtDTO> dto = CourtsPage.map(item -> {
-			CourtDTO i = new CourtDTO();
-			i.setName(item.getName());
-			i.setCity(item.getCity());
-			i.setDescription(item.getDescription());
-			i.setDistrict(item.getDistrict());
-			i.setStatus(item.getStatus());
-			i.setImage(item.getImage());
-			i.setType(item.getType());
-			i.setAddressDetail(item.getAddressDetail());
-			return i;
-		});
-		return dto;
+	public Page<CourtDTO> ownerGetAll(Long id, int page, int size) {
+		Pageable pageable = PageRequest.of(page,size,Sort.by(Sort.Direction.DESC,"id"));
+		Page<CourtsEntity> courtsEntities =courtRepository.findByownerId(id,pageable);
+		return courtsEntities.map(conversCourt::toDTO);
 	}
 
 	@Override
 	public Page<CourtDTO> getAll(int page, int size) {
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 		Page<CourtsEntity> courtsPage = courtRepository.findAll(pageable);
-		Page<CourtDTO> dtoPage = courtsPage.map(item -> {
-			CourtDTO i = new CourtDTO();
-			i.setName(item.getName());
-			i.setCity(item.getCity());
-			i.setDescription(item.getDescription());
-			i.setDistrict(item.getDistrict());
-			i.setImage(item.getImage());
-			i.setStatus(item.getStatus());
-			i.setType(item.getType());
-			i.setAddressDetail(item.getAddressDetail());
-			return i;
-		});
-		return dtoPage;
+		return courtsPage.map(conversCourt::toDTO);
 	}
 }

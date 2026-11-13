@@ -17,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		UsersEntity user = userRepository.findByName(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy user: " + username));		
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + username));		
 		return new CustomUserDetails(user);
 	}
 	
